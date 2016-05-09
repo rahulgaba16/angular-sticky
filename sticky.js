@@ -1,6 +1,8 @@
 angular.module("sticky", []).directive("sticky", function($window) {
   return {
     link: function(scope, element, attrs) {
+      var className = attrs.setClassWhenAtTop || "stuck"; //dynamic class name
+      var offset = attrs.offset ? attrs.offset : 0;
 
       var $win = angular.element($window);
 
@@ -8,23 +10,24 @@ angular.module("sticky", []).directive("sticky", function($window) {
         scope._stickyElements = [];
 
         $win.bind("scroll.sticky", function(e) {
-          var pos = $win.scrollTop();
-          for (var i=0; i<scope._stickyElements.length; i++) {
+          var pos = $win.scrollTop() - offset;
+          for (var i = 0; i < scope._stickyElements.length; i++) {
 
             var item = scope._stickyElements[i];
 
             if (!item.isStuck && pos > item.start) {
-              item.element.addClass("stuck");
+              item.element.addClass(className);
               item.isStuck = true;
 
               if (item.placeholder) {
                 item.placeholder = angular.element("<div></div>")
-                    .css({height: item.element.outerHeight() + "px"})
-                    .insertBefore(item.element);
+                  .css({
+                    height: item.element.outerHeight() + "px"
+                  })
+                  .insertBefore(item.element);
               }
-            }
-            else if (item.isStuck && pos < item.start) {
-              item.element.removeClass("stuck");
+            } else if (item.isStuck && pos < item.start) {
+              item.element.removeClass(className);
               item.isStuck = false;
 
               if (item.placeholder) {
@@ -36,7 +39,7 @@ angular.module("sticky", []).directive("sticky", function($window) {
         });
 
         var recheckPositions = function() {
-          for (var i=0; i<scope._stickyElements.length; i++) {
+          for (var i = 0; i < scope._stickyElements.length; i++) {
             var item = scope._stickyElements[i];
             if (!item.isStuck) {
               item.start = item.element.offset().top;
